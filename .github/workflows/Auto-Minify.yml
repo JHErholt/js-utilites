@@ -16,7 +16,6 @@ jobs:
       - name: Minify-JS Action
         uses: jossydevers/minify-js@v1.0.0
         with:
-          directory: 'utilities/' # (OPTIONAL)
           output: 'minify/src/' # (OPTIONAL)
           
       # Auto-commit to repository
