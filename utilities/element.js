@@ -31,9 +31,6 @@ export default class Ele {
   static #nester(el, n) {
     if (n instanceof Array) {
       n.forEach((element) => {
-        console.log(el);
-        console.log(element);
-        console.log(Ele.#nester(el, element));
         if (n instanceof Array) {
           Ele.#nester(el, element)
         }
