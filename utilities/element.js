@@ -1,4 +1,4 @@
-﻿export class Ele {
+export default class Ele {
   static make(tagName, props, nest) {
     let el = document.createElement(tagName);
     if (props) {
@@ -29,31 +29,23 @@
   }
 
   static #nester(el, n) {
-    switch (typeof n) {
-      case "string":
-      case "number":
-        el.appendChild(document.createTextNode(n));
-        break;
-      case "object":
-        //check if the object is an array or not
-        for (let i = 0; i < n.length; i++) {
-          if (n[i] instanceof Array) {
-            for (let j = 0; j < n[i].length; j++) {
-              if (n[i][j] != null) {
-                el.appendChild(n[i][j]);
-              }
-            }
-          }
-          else {
-            if (n[i] != null) {
-              el.appendChild(n[i]);
-            }
-          }
+    if (n instanceof Array) {
+      n.forEach((element) => {
+        console.log(el);
+        console.log(element);
+        console.log(Ele.#nester(el, element));
+        if (n instanceof Array) {
+          Ele.#nester(el, element)
         }
-        break;
-      default:
-        el.appendChild(n);
-        break;
+        else {
+          el.appendChild(element);
+        }
+      });
+    } else if (n instanceof Object) {
+      el.appendChild(n);
+    }
+    else {
+      el.appendChild(document.createTextNode(n));
     }
     return el;
   }
