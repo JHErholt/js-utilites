@@ -1,29 +1,63 @@
-﻿export class Form {
+export default class Form {
   static getData(selector = null) {
-    if (selector == null || document.querySelector(selector) == null) return null;
-    let form = new FormData(document.querySelector(selector));
-    let data = {};
-    for (var [key, value] of form) {
-      switch (value) {
-        case parseInt(value):
-          data[key] = parseInt(value);
-          break;
-        case parseFloat(value):
-          data[key] = parseFloat(value);
-          break;
-        case "on":
-          data[key] = true;
-          break;
-        default:
-          if (value == null) value = "";
-          data[key] = value;
-          break;
-      }
+    if (selector == null || document.querySelector(selector) == null) {
+      throw new Error("Form not found");
     }
+    let form = document.querySelector(selector);
+    let data = {};
+    let elements = [];
+
+    elements = elements.concat(Array.from(form.querySelectorAll("input")));
+    elements = elements.concat(Array.from(form.querySelectorAll("select")));
+    elements = elements.concat(Array.from(form.querySelectorAll("textarea")));
+    elements.forEach((ele) => {
+      if (ele.name === null || ele.name === "") {
+        throw new Error("Input name is null");
+      }
+      let date = Form.#convertData(ele);
+      if (date != null) {
+        data[ele.name] = Form.#convertData(ele);
+      }
+    });
     return data;
   }
 
+  static #convertData(input) {
+    let type = input.getAttribute("type");
+    let value = input.value;
+    switch (type) {
+      case "number":
+        return Number(value);
+      case "checkbox":
+        if (input.checked) {
+          return input.value;
+        }
+        break;
+      case "radio":
+        if (input.checked) {
+          return value;
+        }
+        break;
+      case "date":
+        let date = new Date(value);
+        if (date.getUTCHours() == 0 && date.getUTCMinutes() == 0 && date.getUTCSeconds() == 0) {
+          return date.toISOString().split("T")[0];
+        }
+        return new Date(value).toISOString();
+      case "hidden":
+        if (!isNaN(value)) {
+          return Number(value);
+        }
+        return value;
+      default:
+        return value;
+    }
+  }
+
   static setData(selector, data) {
+    if (selector == null || document.querySelector(selector) == null) {
+      throw new Error("Form not found");
+    }
     //set data in form with object data
     let form = document.querySelector(selector);
     if (form == null) return;
@@ -40,8 +74,16 @@
         }
         switch (type) {
           case "checkbox":
-          case "radio":
             input.checked = data[key];
+            break;
+          case "radio":
+            //get all radio buttons with same name
+            let radios = form.querySelectorAll(`[name=${key}]`);
+            radios.forEach((radio) => {
+              if (radio.value == data[key]) {
+                radio.checked = true;
+              }
+            });
             break;
           case "date":
             let date = new Date(data[key]);
@@ -68,106 +110,5 @@
         }
       }
     }
-  }
-
-  static clear(selector, settings = { classNameError: "form__error", classNameValid: "form__valid" }) {
-    let form = document.querySelector(selector);
-    if (form == null) return;
-    form.reset();
-
-    //remove all error classes
-    let inputs = form.querySelectorAll("input");
-    inputs.forEach((input) => {
-      input.classList.remove(settings.classNameError);
-      input.classList.remove(settings.classNameValid);
-    });
-  }
-
-  static setValidate(form, settings = { classNameError: "form__error", classNameValid: "form__valid" }) {
-    let inputs = form.querySelectorAll("input");
-
-    //add event listeners to inputs on blur
-    inputs.forEach((input) => {
-      input.addEventListener("blur", (e) => {
-        let valid = true;
-
-        let type = e.srcElement.getAttribute("type");
-        let value = e.srcElement.value;
-        let regex = e.srcElement.getAttribute("regex");
-        let required = e.srcElement.getAttribute("required");
-
-        //check if input is required
-        if (required != null && required == "true") {
-          if (value == null || value == "") {
-            valid = false;
-          }
-        }
-
-        //check if input has regex
-        if (regex != null) {
-          let reg = new RegExp(regex);
-          if (!reg.test(value)) {
-            valid = false;
-          }
-        }
-
-        switch (type) {
-          case "number":
-            if (isNaN(value)) {
-              valid = false;
-            }
-            break;
-          case "date":
-            if (isNaN(Date.parse(value))) {
-              valid = false;
-            }
-            break;
-        }
-
-        //get min and max if they exist
-        let min = e.srcElement.getAttribute("min");
-        let max = e.srcElement.getAttribute("max");
-        if (min != null) {
-          if (value < min) {
-            valid = false;
-          }
-        }
-        if (max != null) {
-          if (value > max) {
-            valid = false;
-          }
-        }
-
-        //add error class to input
-        if (!valid) {
-          e.srcElement.classList.add(settings.classNameError);
-          e.srcElement.classList.remove(settings.classNameValid);
-        } else {
-          e.srcElement.classList.remove(settings.classNameError);
-          e.srcElement.classList.add(settings.classNameValid);
-        }
-      });
-    });
-  }
-
-  static validate(form, settings = { classNameError: "form__error", classNameValid: "form__valid" }) {
-    //get all inputs
-    let inputs = form.querySelectorAll("input");
-    let valid = true;
-
-    //loop through all inputs
-    inputs.forEach((input) => {
-      //trigger blur event
-      input.dispatchEvent(new Event("blur"));
-    });
-
-    //check if any inputs are invalid
-    inputs.forEach((input) => {
-      if (input.classList.contains(settings.classNameError)) {
-        valid = false;
-      }
-    });
-
-    return valid;
   }
 }
