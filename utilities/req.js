@@ -1,4 +1,4 @@
-export class Req {
+export default class Req {
   static async do(
     url,
     { method = "GET", body = null, headers = { "Content-Type": "application/json;" }, responseType = "json" } = {},
@@ -61,8 +61,14 @@ export class Req {
               callSuccess = true;
             }
           } catch (e) {
-            data = await response.text();
-            callSuccess = true;
+            console.log(e, response);
+            if (response.redirected) {
+              data = "request redirected to " + response.url;
+              callSuccess = false;
+            } else {
+              data = await response.text();
+              callSuccess = true;
+            }
           }
 
           break;
