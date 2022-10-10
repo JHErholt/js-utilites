@@ -14,7 +14,6 @@ export default class Ele {
             el.setAttribute(name, props[name].call());
           }
         } else {
-          ;
           el.setAttribute(name, props[name]);
         }
       }
