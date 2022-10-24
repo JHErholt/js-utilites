@@ -41,7 +41,17 @@ export default class Ele {
       el.appendChild(n);
     }
     else {
-      el.appendChild(document.createTextNode(n));
+      if (typeof n == 'string' && n.toString().includes('\\n')) {
+        let lastElement = n.split('\\n')[n.split('\\n').length - 1];
+        n.split('\\n').map((element) => {
+          el.appendChild(document.createTextNode(element));
+          if (element != lastElement) {
+            el.appendChild(Ele.make('br', { style: 'content: " "; display: block; margin: 20px 0;' }, ''));
+          }
+        });
+      } else {
+        el.appendChild(document.createTextNode(n));
+      }
     }
     return el;
   }
