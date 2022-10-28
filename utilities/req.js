@@ -43,8 +43,11 @@ export default class Req {
           data = await response.json();
           if ("successfully" in data && !data.successfully) {
             callSuccess = false;
-          } else {
+          } else if(data != null) {
             callSuccess = true;
+          }
+          else {
+            callSuccess = false;
           }
           break;
         case "application/octet-stream":
@@ -55,11 +58,14 @@ export default class Req {
         default:
           try {
             data = await response.json();
-            if ("successfully" in data && !data.successfully) {
-              callSuccess = false;
-            } else {
-              callSuccess = true;
-            }
+          if ("successfully" in data && !data.successfully) {
+            callSuccess = false;
+          } else if(data != null) {
+            callSuccess = true;
+          }
+          else {
+            callSuccess = false;
+          }
           } catch (e) {
             console.log(e, response);
             if (response.redirected) {
